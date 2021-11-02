@@ -4,7 +4,7 @@ import updateFocus from './update-focus/update-focus';
 import handleArrowUtil from './handle-arrow/handle-arrow';
 import enforceStateStructure from './utils/enforce-state-structure';
 import recursivelyUpdateChildren from './utils/recursively-update-node';
-import warning from './utils/warning';
+import { warning } from './utils/warning';
 import {
   FocusState,
   Orientation,
@@ -16,25 +16,52 @@ import {
   NodeUpdate,
   Listener,
   NodeDefinition,
+  InteractionMode,
 } from './types';
 
 interface CreateFocusStoreOptions {
   orientation?: Orientation;
   wrapping?: boolean;
   navigationStyle?: NavigationStyle;
+  pointerEvents?: boolean;
 }
+
+// When these props of a node change, then the store
+// will alert subscribers.
+const dynamicNodeProps = [
+  'defaultFocusChild',
+  'disabled',
+  'isExiting',
+  'defaultFocusColumn',
+  'defaultFocusRow',
+  'wrapping',
+  'trap',
+  'forgetTrapFocusHierarchy',
+];
 
 export default function createFocusStore({
   orientation = 'horizontal',
   wrapping = false,
+  pointerEvents = false,
 }: CreateFocusStoreOptions = {}): FocusStore {
   let currentState: FocusState = {
     focusedNodeId: 'root',
     activeNodeId: null,
     focusHierarchy: ['root'],
+
+    // TODO: should the interaction state values be moved out of the state and placed
+    // on the store directly?
+    interactionMode: 'lrud',
+    _hasPointerEventsEnabled: pointerEvents,
+
     _updatingFocusIsLocked: false,
     nodes: {
       root: {
+        // Note: this a "fake" React ref in that React isn't ensuring
+        // that it stays constant.
+        elRef: {
+          current: null,
+        },
         focusId: 'root',
         isRoot: true,
         parentId: null,
@@ -50,14 +77,14 @@ export default function createFocusStore({
         wrapping,
         navigationStyle: 'first-child',
         nodeNavigationItem: 'default',
-        restoreTrapFocusHierarchy: true,
+        forgetTrapFocusHierarchy: true,
         children: [],
         focusedChildIndex: null,
         prevFocusedChildIndex: null,
         _gridColumnIndex: null,
         _gridRowIndex: null,
-        wrapGridRows: false,
-        wrapGridColumns: false,
+        wrapGridVertical: false,
+        wrapGridHorizontal: false,
         _focusTrapPreviousHierarchy: [],
       },
     },
@@ -179,6 +206,8 @@ export default function createFocusStore({
       }
 
       return;
+    } else if (currentNode.disabled) {
+      return;
     } else if (currentNode.isExiting) {
       if (process.env.NODE_ENV !== 'production') {
         warning(
@@ -211,6 +240,19 @@ export default function createFocusStore({
     });
   }
 
+  function setInteractionMode(newMode: InteractionMode) {
+    if (newMode === currentState.interactionMode) {
+      return;
+    }
+
+    const newFocusState: FocusState = {
+      ...currentState,
+      interactionMode: newMode,
+    };
+
+    currentState = newFocusState;
+  }
+
   function updateNode(nodeId: Id, update: NodeUpdate) {
     const currentNode = currentState.nodes[nodeId];
 
@@ -237,46 +279,61 @@ export default function createFocusStore({
     }
 
     if (nodeId === 'root') {
-      if (update.disabled) {
-        warning(
-          'You attempted to disable the root node. ' +
-            'The root node of a focus tree cannot be disabled. ' +
-            'This has no effect, but it may represent an error in your code.',
-          'DISABLE_ROOT_NODE'
-        );
-      }
+      if (process.env.NODE_ENV !== 'production') {
+        if (update.disabled) {
+          warning(
+            'You attempted to disable the root node. ' +
+              'The root node of a focus tree cannot be disabled. ' +
+              'This has no effect, but it may represent an error in your code.',
+            'DISABLE_ROOT_NODE'
+          );
+        }
 
-      if (update.isExiting) {
-        warning(
-          'You attempted to exit the root node. ' +
-            'The root node of a focus tree cannot be exited. ' +
-            'This has no effect, but it may represent an error in your code.',
-          'EXIT_ROOT_NODE'
-        );
+        if (update.isExiting) {
+          warning(
+            'You attempted to exit the root node. ' +
+              'The root node of a focus tree cannot be exited. ' +
+              'This has no effect, but it may represent an error in your code.',
+            'EXIT_ROOT_NODE'
+          );
+        }
       }
       return;
     }
 
-    const newDisabledState = Boolean(update.disabled);
-    const newExitState = Boolean(update.isExiting);
+    update.disabled = Boolean(update.disabled);
+    update.isExiting = Boolean(update.isExiting);
 
-    const disableChanged = currentNode.disabled !== newDisabledState;
-    const exitChanged = currentNode.isExiting !== newExitState;
-    const nodeChanged = disableChanged || exitChanged;
+    const nodeChanged = dynamicNodeProps.some((prop) => {
+      // @ts-ignore
+      return currentNode[prop] !== update[prop];
+    });
 
     if (update && nodeChanged) {
       const newNode: Node = {
         ...currentNode,
-        disabled: newDisabledState,
-        isExiting: newExitState,
+        disabled: update.disabled,
+        isExiting: update.isExiting,
+        defaultFocusColumn:
+          update.defaultFocusColumn ?? currentNode.defaultFocusColumn,
+        defaultFocusRow: update.defaultFocusRow ?? currentNode.defaultFocusRow,
+        wrapping: update.wrapping ?? currentNode.wrapping,
+        trap: update.wrapping ?? currentNode.trap,
+        forgetTrapFocusHierarchy:
+          update.forgetTrapFocusHierarchy ??
+          currentNode.forgetTrapFocusHierarchy,
+        defaultFocusChild:
+          update.defaultFocusChild ?? currentNode.defaultFocusChild,
       };
 
       const updatedChildren = recursivelyUpdateChildren(
         currentState.nodes,
         newNode.children,
+        // Note: we don't pass the full update as the other attributes (trap, wrapping, etc)
+        // only affect the parent, whereas these specific values affect the children.
         {
-          disabled: newDisabledState,
-          isExiting: newExitState,
+          disabled: update.disabled,
+          isExiting: update.isExiting,
         }
       );
 
@@ -293,7 +350,7 @@ export default function createFocusStore({
         },
       };
 
-      if (nodeWasFocused && (newDisabledState || newExitState)) {
+      if (nodeWasFocused && (update.disabled || update.isExiting)) {
         const parentId = newNode.parentId as Id;
 
         updatedState = updateFocus({
@@ -315,6 +372,10 @@ export default function createFocusStore({
 
     if (!newState) {
       return;
+    }
+
+    if (newState.interactionMode !== 'lrud') {
+      newState.interactionMode = 'lrud';
     }
 
     if (newState !== currentState) {
@@ -371,6 +432,61 @@ export default function createFocusStore({
     onUpdate();
   }
 
+  // This boolean tracks whether or not we have registered our pointer listeners.
+  // This ensures that we never register those listeners more than once.
+  let isListeningToPointerEvents = false;
+
+  // This allows a user to dynamically enable/disable pointer events.
+  function configurePointerEvents(enablePointerEvents: boolean) {
+    const existingState = currentState;
+
+    currentState = {
+      ...existingState,
+      _hasPointerEventsEnabled: enablePointerEvents,
+    };
+
+    if (enablePointerEvents && !isListeningToPointerEvents) {
+      addPointerListeners();
+    }
+
+    if (!enablePointerEvents) {
+      removePointerListeners();
+    }
+  }
+
+  let handlingPointerEvent = false;
+  function onPointerEvent() {
+    if (handlingPointerEvent) {
+      return;
+    }
+
+    handlingPointerEvent = true;
+    requestAnimationFrame(() => {
+      setInteractionMode('pointer');
+      handlingPointerEvent = false;
+    });
+  }
+
+  function addPointerListeners() {
+    isListeningToPointerEvents = true;
+    window.addEventListener('mousemove', onPointerEvent);
+    window.addEventListener('mousedown', onPointerEvent);
+  }
+
+  function removePointerListeners() {
+    isListeningToPointerEvents = false;
+    window.removeEventListener('mousemove', onPointerEvent);
+    window.removeEventListener('mousedown', onPointerEvent);
+  }
+
+  function destroy() {
+    removePointerListeners();
+  }
+
+  if (pointerEvents) {
+    addPointerListeners();
+  }
+
   return {
     subscribe,
     getState,
@@ -380,5 +496,7 @@ export default function createFocusStore({
     updateNode,
     handleArrow,
     handleSelect,
+    configurePointerEvents,
+    destroy,
   };
 }

@@ -17,13 +17,38 @@ You can configure the orientation of a Focus Node using the `orientation` prop.
 
 Horizontally oriented focus nodes will respond to the Left and Right keys. Vertically oriented nodes will respond to the Up and Down keys.
 
-Note that you are responsible for the visual representation of your nodes, so if you set the orientation to vertical then you will want to use
-CSS to make the list of focus nodes appear vertical.
+Keep in mind that you are responsible for the visual representation of your nodes, so after you set your orientation to be a particular
+direction you must write CSS to arrange the list of focus nodes to match that direction.
 
 ## Updating the Orientation
 
 The orientation of a focus node cannot be changed once it is set.
 
-## Example
+## Examples
 
-Coming soon.
+### Horizontal Orientation
+
+This is a focus node with horizontal orientation.
+
+```js
+<FocusNode>
+  <FocusNode>Child A</FocusNode>
+  <FocusNode>Child B</FocusNode>
+  <FocusNode>Child C</FocusNode>
+</FocusNode>
+```
+
+It's horizontal because the default orientation is horizontal.
+
+### Vertical Orientation
+
+This is a focus node with horizontal orientation.
+
+```js
+<FocusNode orientation="vertical">
+  <FocusNode>Child A</FocusNode>
+  <FocusNode>Child B</FocusNode>
+  <FocusNode>Child C</FocusNode>
+</FocusNode>
+```
+

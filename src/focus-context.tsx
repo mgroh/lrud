@@ -1,20 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import createFocusStore from './focus-store';
 import lrudInput from './lrud-input/focus-lrud';
 import { ProviderValue, RootFocusNode, Orientation } from './types';
-import warning from './utils/warning';
+import { warning } from './utils/warning';
 
 const FocusContext = React.createContext<null | ProviderValue>(null);
 
-function FocusProviderWrapper({
+function FocusRoot({
   orientation,
   wrapping,
   children,
+  pointerEvents,
 }: {
   children?: React.ReactNode;
   orientation?: Orientation;
   wrapping?: boolean;
+  pointerEvents?: boolean;
 }) {
+  const rootElRef = useRef(null);
   const [providerValue] = useState<ProviderValue>(() => {
     if (process.env.NODE_ENV !== 'production') {
       if (
@@ -32,12 +35,14 @@ function FocusProviderWrapper({
     const store = createFocusStore({
       orientation,
       wrapping,
+      pointerEvents,
     });
 
     return {
       store,
       focusDefinitionHierarchy: [
         {
+          elRef: rootElRef,
           focusId: 'root',
         },
       ],
@@ -64,5 +69,5 @@ function FocusProviderWrapper({
 
 export default {
   Context: FocusContext,
-  FocusRoot: FocusProviderWrapper,
+  FocusRoot,
 };

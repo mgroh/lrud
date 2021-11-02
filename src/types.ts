@@ -1,3 +1,5 @@
+import { Ref, RefObject } from 'react';
+
 export type Orientation = 'horizontal' | 'vertical';
 export type Direction = 'forward' | 'backward';
 
@@ -13,6 +15,8 @@ export type NavigationStyle = 'first-child' | 'grid';
 
 export type ButtonKey = 'select' | 'back';
 export type LRUDKey = Arrow | 'select' | 'back';
+
+export type ReactNodeRef = Ref<HTMLElement>;
 
 export interface LRUDEvent {
   key: LRUDKey;
@@ -96,6 +100,7 @@ export interface BaseNode extends FocusNodeEvents {
 }
 
 export interface RootFocusNode extends BaseNode {
+  elRef: RefObject<null>;
   isRoot: true;
   parentId: null;
   isFocused: boolean;
@@ -104,18 +109,19 @@ export interface RootFocusNode extends BaseNode {
   wrapping: boolean;
   disabled: boolean;
   trap: boolean;
+  defaultFocusChild?: number | (() => number);
 
   defaultFocusColumn: number;
   defaultFocusRow: number;
 
-  restoreTrapFocusHierarchy: boolean;
+  forgetTrapFocusHierarchy: boolean;
 
   navigationStyle: NavigationStyle;
   nodeNavigationItem: NodeNavigationItem;
   _gridColumnIndex: null | number;
   _gridRowIndex: null | number;
-  wrapGridRows: boolean;
-  wrapGridColumns: boolean;
+  wrapGridVertical: boolean;
+  wrapGridHorizontal: boolean;
 
   _focusTrapPreviousHierarchy: NodeHierarchy;
 }
@@ -125,9 +131,16 @@ export type Listener = () => void;
 export interface NodeUpdate {
   disabled?: boolean;
   isExiting?: boolean;
+  wrapping?: boolean;
+  trap?: boolean;
+  forgetTrapFocusHierarchy?: boolean;
+  defaultFocusColumn?: number;
+  defaultFocusRow?: number;
+  defaultFocusChild?: number | (() => number);
 }
 
 export interface FocusNode extends BaseNode {
+  elRef: RefObject<HTMLElement | null>;
   isRoot: false;
   parentId: string;
   isFocused: boolean;
@@ -138,14 +151,15 @@ export interface FocusNode extends BaseNode {
   disabled: boolean;
   navigationStyle: NavigationStyle;
   nodeNavigationItem: NodeNavigationItem;
+  defaultFocusChild?: number | (() => number);
 
   defaultFocusColumn: number;
   defaultFocusRow: number;
 
-  restoreTrapFocusHierarchy: boolean;
+  forgetTrapFocusHierarchy: boolean;
 
-  wrapGridRows: boolean;
-  wrapGridColumns: boolean;
+  wrapGridVertical: boolean;
+  wrapGridHorizontal: boolean;
   _gridColumnIndex: null | number;
   _gridRowIndex: null | number;
 
@@ -158,31 +172,37 @@ export interface NodeMap {
   [key: string]: Node | undefined;
 }
 
+export type InteractionMode = 'lrud' | 'pointer';
+
 export interface FocusState {
   focusedNodeId: Id;
   activeNodeId: Id | null;
   focusHierarchy: Id[];
+  interactionMode: InteractionMode;
   nodes: NodeMap;
   _updatingFocusIsLocked: boolean;
+  _hasPointerEventsEnabled: boolean;
 }
 
 export interface NodeDefinition extends FocusNodeEvents {
   focusId: Id;
+  elRef: RefObject<HTMLElement | null>;
   wrapping?: boolean;
   orientation?: Orientation;
   trap?: boolean;
   navigationStyle?: NavigationStyle;
   initiallyDisabled?: boolean;
+  defaultFocusChild?: number | (() => number);
 
-  wrapGridRows?: boolean;
-  wrapGridColumns?: boolean;
+  wrapGridVertical?: boolean;
+  wrapGridHorizontal?: boolean;
 
   isExiting?: boolean;
 
   defaultFocusColumn?: number;
   defaultFocusRow?: number;
 
-  restoreTrapFocusHierarchy?: boolean;
+  forgetTrapFocusHierarchy?: boolean;
 
   // This will seek out this node identifier, and set focus to it.
   // IDs are more general, but child indices work, too.
@@ -207,6 +227,8 @@ export interface FocusStore {
   updateNode: UpdateNode;
   handleArrow: (arrow: Arrow) => void;
   handleSelect: (nodeId?: Id) => void;
+  configurePointerEvents: (enablePointerEvents: boolean) => void;
+  destroy: () => void;
 }
 
 export interface ProviderValue {
@@ -223,16 +245,17 @@ export interface FocusNodeProps extends FocusNodeEvents {
   className?: string;
   children?: React.ReactNode;
   wrapping?: boolean;
-  wrapGridRows?: boolean;
-  wrapGridColumns?: boolean;
+  wrapGridVertical?: boolean;
+  wrapGridHorizontal?: boolean;
   orientation?: Orientation;
   isGrid?: boolean;
   isTrap?: boolean;
-  restoreTrapFocusHierarchy?: boolean;
+  forgetTrapFocusHierarchy?: boolean;
   propsFromNode?: PropsFromNode;
   isExiting?: boolean;
   onMountAssignFocusTo?: Id;
   disabled?: boolean;
+  defaultFocusChild?: number | (() => number);
 
   onClick?: (e: any) => void;
   onMouseOver?: (e: any) => void;

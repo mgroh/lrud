@@ -1,7 +1,8 @@
 # lrud
 
-[![Travis build status](http://img.shields.io/travis/jamesplease/lrud.svg?style=flat)](https://travis-ci.com/github/jamesplease/lrud)
-[![npm version](https://img.shields.io/npm/v/@please/lrud.svg)](https://www.npmjs.com/package/@please/lrud)
+[![Travis build status](https://img.shields.io/travis/com/jamesplease/lrud/main)](https://travis-ci.com/github/jamesplease/lrud)
+[![npm version](https://img.shields.io/npm/v/@please/lrud.svg?color=brightgreen)](https://www.npmjs.com/package/@please/lrud)
+[![Code coverage](https://img.shields.io/coveralls/github/jamesplease/lrud?color=brightgreen)](https://coveralls.io/github/jamesplease/lrud)
 
 A React library for managing focus in LRUD applications.
 
@@ -34,7 +35,8 @@ This library has the following peer dependencies:
 ## Table of Contents
 
 - [**Guides**](#guides)
-  - [Getting started](#getting-started)
+  - [Basic Setup](#basic-setup)
+  - [Getting Started](#getting-started)
   - [FAQ](#faq)
 - [**API Reference**](#api-reference)
   - [\<FocusRoot/\>](#focusroot-)
@@ -57,7 +59,7 @@ This library has the following peer dependencies:
 
 ## Guides
 
-### Getting Started
+### Basic Setup
 
 Render the `FocusRoot` high up in your application's component tree.
 
@@ -88,6 +90,13 @@ LRUD commands on their keyboard or remote control.
 
 This behavior can be configured through the props of the FocusNode component. To
 learn more about those props, refer to the API documentation below.
+
+### Getting Started
+
+The recommended way to familiarize yourself with this library is to begin by looking at the [examples](#examples). The examples
+do a great job at demonstrating the kinds of interfaces you can create with this library using little code.
+
+Once you've checked out a few examples you should be in a better position to read through these API docs!
 
 ### FAQ
 
@@ -134,25 +143,26 @@ All props are optional. Example usage appears beneath the props table.
 | `propsFromNode`             | function            |                  | A function you can supply to compute additional props to apply to the element. The function is passed one argument, the [focus node](#focusnode).                                      |
 | `className`                 | string              |                  | A class name to apply to this element.                                                                                                                                                 |
 | `focusedClass`              | string              | "isFocused"      | A class name that is applied when this element is focused.                                                                                                                             |
-| `focusedLeafClass`          | string              | "isFocusedLeaf" | A class name that is applied this element is exactly focused.                                                                                                                          |
+| `focusedLeafClass`          | string              | "isFocusedLeaf"  | A class name that is applied this element is a focused leaf.                                                                                                                           |
 | `activeClass`               | string              | "isActive"       | A class name that is applied this element is active.                                                                                                                                   |
 | `disabledClass`             | string              | "focusDisabled"  | A class name that is applied this element is disabled.                                                                                                                                 |
 | `elementType`               | string\|elementType | 'div'            | The React element type to render. For instance, `"img"` or [`motion.div`](https://www.framer.com/api/motion/component/).                                                               |
 | `focusId`                   | string              | `{unique_id}`    | A unique identifier for this node. Specify this yourself for debugging purposes, or when you will need to manually set focus to the node.                                              |
 | `orientation`               | string              | 'horizontal'     | Whether the children of this node are arranged horizontally or vertically. Pass `"vertical"` for vertical lists.                                                                       |
 | `wrapping`                  | boolean             | `false`          | Set to `true` for the navigation to wrap when the user reaches the start or end of the children list. For grids this sets wrapping in both directions.                                 |
-| `wrapGridColumns`           | boolean             | `false`          | Set to `true` for horizontal navigation in grids to wrap.                                                                                                                              |
-| `wrapGridRows`              | boolean             | `false`          | Set to `true` for vertical navigation in grids to wrap.                                                                                                                                |
+| `wrapGridHorizontal`        | boolean             | `false`          | Set to `true` for horizontal navigation in grids to wrap.                                                                                                                              |
+| `wrapGridVertical`          | boolean             | `false`          | Set to `true` for vertical navigation in grids to wrap.                                                                                                                                |
 | `disabled`                  | boolean             | `false`          | This node will not receive focus when `true`.                                                                                                                                          |
 | `isGrid`                    | boolean             | `false`          | Pass `true` to make this a grid.                                                                                                                                                       |
 | `isTrap`                    | boolean             | `false`          | Pass `true` to make this a focus trap.                                                                                                                                                 |
-| `restoreTrapFocusHierarchy` | boolean             | `true`           | Pass `false` and, if this node is a trap, it will not restore their previous focus hierarchy when becoming focused again.                                                              |
+| `forgetTrapFocusHierarchy`  | boolean             | `false`          | Pass `true` and, if this node is a trap, it will not restore their previous focus hierarchy when becoming focused again.                                                               |
 | `onMountAssignFocusTo`      | string              |                  | A focus ID of a nested child to default focus to when this node mounts.                                                                                                                |
+| `defaultFocusChild`         | number              |                  | The child index that should receive focus when focus is assigned to this focus node. Does not work with grids.                                                                         |
 | `defaultFocusColumn`        | number              | `0`              | The column index that should receive focus when focus is assigned to this focus node. Applies to grids only.                                                                           |
 | `defaultFocusRow`           | number              | `0`              | The row index that should receive focus when focus is assigned to this focus node. Applies to grids only.                                                                              |
 | `isExiting`                 | boolean             |                  | Pass `true` to signal that this node is animating out. Useful for certain kinds of exit transitions.                                                                                   |
-| `onFocused`                 | function            |                  | A function that is called when the node receives focus. Passed one argument, an [LRUDEvent](#lrudevent).                                                                               |
-| `onBlurred`                 | function            |                  | A function that is called when the node loses focus. Passed one argument, an [LRUDEvent](#lrudevent).                                                                                  |
+| `onFocused`                 | function            |                  | A function that is called when the node receives focus. Passed one argument, an [FocusEvent](#focusevent).                                                                             |
+| `onBlurred`                 | function            |                  | A function that is called when the node loses focus. Passed one argument, an [FocusEvent](#focusevent).                                                                                |
 | `onKey`                     | function            |                  | A function that is called when the user presses any TV remote key while this element has focus. Passed one argument, an [LRUDEvent](#lrudevent).                                       |
 | `onArrow`                   | function            |                  | A function that is called when the user presses a directional button. Passed one argument, an [LRUDEvent](#lrudevent).                                                                 |
 | `onLeft`                    | function            |                  | A function that is called when the user presses the left button. Passed one argument, an [LRUDEvent](#lrudevent).                                                                      |
@@ -324,6 +334,7 @@ A focus node. Each `<FocusNode/>` React component creates one of these.
 
 | Property                      | Type             | Description                                                                                                                       |
 | ----------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `elRef`                       | ref              | A ref containing the HTML element for this node.                                                                                  |
 | `focusId`                     | string           | A unique identifier for this node.                                                                                                |
 | `children`                    | Array\<string\>  | An array of focus IDs representing the children of this node.                                                                     |
 | `focusedChildIndex`           | number\|null     | The index of the focused child of this node, if there is one.                                                                     |
@@ -334,11 +345,11 @@ A focus node. Each `<FocusNode/>` React component creates one of these.
 | `disabled`                    | boolean          | `true` when this node is disabled.                                                                                                |
 | `isExiting`                   | boolean          | Set to `true` to indicate that the node will be animating out. Useful for certain exit animations.                                |
 | `wrapping`                    | boolean          | `true` when the navigation at the end of the node will wrap around to the other side.                                             |
-| `wrapGridRows`                | boolean          | `true` when grid rows will wrap.                                                                                                  |
-| `wrapGridColumns`             | boolean          | `true` when grid columns will wrap.                                                                                               |
+| `wrapGridVertical`                | boolean          | `true` when grid rows will wrap.                                                                                                  |
+| `wrapGridHorizontal`             | boolean          | `true` when grid columns will wrap.                                                                                               |
 | `isRoot`                      | boolean          | `true` this is the root node.                                                                                                     |
 | `trap`                        | boolean          | `true` when this node is a focus trap.                                                                                            |
-| `restoreTrapFocusHierarchy`   | boolean          | Set to `true` and a focus trap will restore its previous hierarchy upon becoming re-focused.                                      |
+| `forgetTrapFocusHierarchy`   | boolean          | Set to `false` and a focus trap will restore its previous hierarchy upon becoming re-focused.                                      |
 | `parentId`                    | string \| `null` | The focus ID of the parent node. `null` for the root node.                                                                        |
 | `orientation`                 | string           | A string representing the orientation of the node (either `"horizontal"` or `"vertical"`)                                         |
 | `navigationStyle`             | string           | One of `'first-child'` or `'grid'`                                                                                                |
@@ -417,15 +428,17 @@ An object that represents the store that contains all of the state related to wh
 Typically, you should not need to interact with this object directly, but it is made available to you
 for advanced use cases that you may have.
 
-| Property       | Type     | Description                                                            |
-| -------------- | -------- | ---------------------------------------------------------------------- |
-| `getState`     | function | Returns the current [FocusState](#focusstate)                          |
-| `createNodes`  | function | Creates one or more focus nodes in the tree.                           |
-| `deleteNode`   | function | Deletes a focus node from the tree.                                    |
-| `setFocus`     | function | Imperatively assign focus to a particular focus node.                  |
-| `updateNode`   | function | Update an existing node. Used to, for example, set a node as disabled. |
-| `handleArrow`  | function | Call this to navigate based on an arrow key press.                     |
-| `handleSelect` | function | Call this to cause the focus tree to respond to a "select" key press.  |
+| Property                 | Type     | Description                                                            |
+| ------------------------ | -------- | ---------------------------------------------------------------------- |
+| `getState`               | function | Returns the current [FocusState](#focusstate)                          |
+| `createNodes`            | function | Creates one or more focus nodes in the tree.                           |
+| `deleteNode`             | function | Deletes a focus node from the tree.                                    |
+| `setFocus`               | function | Imperatively assign focus to a particular focus node.                  |
+| `updateNode`             | function | Update an existing node. Used to, for example, set a node as disabled. |
+| `handleArrow`            | function | Call this to navigate based on an arrow key press.                     |
+| `handleSelect`           | function | Call this to cause the focus tree to respond to a "select" key press.  |
+| `configurePointerEvents` | function | Enable or disable pointer events. Receives one argument, a `boolean`.  | 
+| `destroy`                | function | Call when disposing of the store. Cleans up event listeners.           |
 
 ### `FocusState`
 
@@ -433,13 +446,16 @@ for advanced use cases that you may have.
 
 An object representing the state of the focus in the app.
 
-| Property                 | Type             | Description                                                          |
-| ------------------------ | ---------------- | -------------------------------------------------------------------- |
-| `focusedNodeId`          | string           | The ID of the leaf node in the focus hierarchy.                      |
-| `focusHierarchy`         | Array            | An array of node IDs representing the focus hierarchy.               |
-| `activeNodeId`           | string \| `null` | The ID of the active node, if there is one.                          |
-| `nodes`                  | Object           | A mapping of all of the focus nodes that exist.                      |
-| `_updatingFocusIsLocked` | boolean          | A boolean used internally for managing the creation of nested nodes. |
+| Property                   | Type             | Description                                                             |
+| -------------------------- | ---------------- | ----------------------------------------------------------------------- |
+| `focusedNodeId`            | string           | The ID of the leaf node in the focus hierarchy.                         |
+| `focusHierarchy`           | Array            | An array of node IDs representing the focus hierarchy.                  |
+| `activeNodeId`             | string \| `null` | The ID of the active node, if there is one.                             |
+| `nodes`                    | Object           | A mapping of all of the focus nodes that exist.                         |
+| `interactionMode`          | string           | The active interaction mode of the app. Either `"lrud"` or `"pointer"`. |
+| `_hasPointerEventsEnabled` | boolean          | A boolean used internally for managing the creation of nested nodes.    |
+| `_hasPointerEventsEnabled` | boolean          | Whether or not pointer events are currently enabled.                    |
+| `_updatingFocusIsLocked`   | boolean          | A boolean used internally for managing the creation of nested nodes.    |
 
 ## Examples
 
@@ -450,16 +466,20 @@ Instructions for running the examples are found in the README file for each exam
 
 #### Basic Examples
 
-- [**Basic Layout**](./examples/basic-layout) - Demonstrates using the `orientation` prop for vertical and horizontal lists
-- [**Wrapping**](./examples/wrapping) - Includes usage of the `wrapping` prop
-- [**Grid**](./examples/grid) - Shows how to build a grid of focus nodes
-- [**Disabled Focus Nodes**](./examples/disabled-focus-nodes) - Shows how to disable focus nodes using the `disabled` prop
-- [**Focus Trap**](./examples/focus-trap) - Demonstrates how to create focus traps
+- [**Basic Layout**](./examples/basic/basic-layout) - Demonstrates using the `orientation` prop for vertical and horizontal lists
+- [**Wrapping**](./examples/basic/wrapping) - Includes usage of the `wrapping` prop
+- [**Grid**](./examples/basic/grid) - Shows how to build a grid of focus nodes
+- [**Disabled Focus Nodes**](./examples/basic/disabled-focus-nodes) - Shows how to disable focus nodes using the `disabled` prop
+- [**Focus Trap**](./examples/basic/focus-trap) - Demonstrates how to create focus traps
 
 #### Advanced Examples
 
-- [**Animated Page Transition**](./examples/animated-page-transition) - Animate between two pages
-- [**`isExiting` Page Transition**](./examples/animated-page-transition) - Animating between pages _without_ user input
+- [**Modal**](./examples/advanced/modal) - Show and hide an animated modal overlay
+- [**Animated Page Transition**](./examples/advanced/animated-page-transition) - Animate between two pages
+- [**`isExiting` Page Transition**](./examples/advanced/animated-page-transition) - Animating between pages _without_ user input
+- [**Pointer Events**](./examples/advanced/pointer-events) - An interface that supports both pointer and LRUD input
+- [**Grid That Remembers Position**](./examples/advanced/grid-remembers-position) - A grid that returns you to your previous position when you exit and re-enter it
+- [**TV App**](./examples/advanced/tv-app) - A simple TV app
 
 ## Prior Art
 

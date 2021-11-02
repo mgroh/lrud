@@ -1,5 +1,43 @@
 # Changelog
 
+### v0.0.15 (2021/6/17)
+
+**New Features**
+
+- A new prop, `defaultFocusChild`, allows you to specify a particular child's index to receive
+  focus. This node is analogous to `defaultFocusColumn` and `defaultFocusRow` for nodes that are
+  not grids.
+
+**Bug Fixes**
+
+- Warnings will now log the associated node's focus ID, even when you do not specify one.
+
+### v0.0.14 (2021/6/17)
+
+**Bug Fixes**
+
+- Fixed an edge case where navigating in a tree with a trap would not behave
+  as expected.
+
+### v0.0.13 (2021/6/17)
+
+**Bug Fixes**
+
+- Numerous pointer-related bugs have been squashed
+- More props passed into FocusNode can be dynamically updated
+- `useSetFocus` no longer works on disabled nodes
+
+### v0.0.12 (2021/6/15)
+
+**New Features**
+
+- `elRef` is now an attribute of the `FocusNode`, allowing you to more easily
+  access the underlying DOM node.
+
+**Bug Fixes**
+
+- `useFocusHierarchy` now functions correctly
+
 ### v0.0.11 (2020/8/24)
 
 **Bug Fixes**

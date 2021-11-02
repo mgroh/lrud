@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState, useRef } from 'react';
 import FocusContext from '../focus-context';
-import warning from '../utils/warning';
+import { warning } from '../utils/warning';
 import { Node, NodeHierarchy } from '../types';
 
 function hierarchiesAreEqual(
@@ -37,7 +37,7 @@ export default function useFocusHierarchy(): Node[] {
     } else {
       const focusState = contextValue.store.getState();
       return focusState.focusHierarchy.map(
-        nodeId => focusState.nodes[nodeId]
+        (nodeId) => focusState.nodes[nodeId]
       ) as Node[];
     }
   });
@@ -53,10 +53,12 @@ export default function useFocusHierarchy(): Node[] {
     const currentState = contextValue.store.getState();
 
     const currentHierarchy = contextValue.store.getState().focusHierarchy;
-    if (hierarchiesAreEqual(focusHierarchyRef.current, currentHierarchy)) {
-      setFocusHierarchy(currentState.focusHierarchy.map(
-        nodeId => currentState.nodes[nodeId]
-      ) as Node[]);
+    if (!hierarchiesAreEqual(focusHierarchyRef.current, currentHierarchy)) {
+      setFocusHierarchy(
+        currentState.focusHierarchy.map(
+          (nodeId) => currentState.nodes[nodeId]
+        ) as Node[]
+      );
     }
   }
 

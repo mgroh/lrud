@@ -1,3 +1,4 @@
+import nodeCanReceiveIndirectFocus from '../../utils/node-can-receive-indirect-focus';
 import { FocusState, Node, Orientation, Direction, Id } from '../../types';
 
 export default function getDefaultNavTarget(
@@ -19,11 +20,11 @@ export default function getDefaultNavTarget(
     } else {
       const unfilteredChildren = parentNode.children || [];
 
-      // We only consider children nodes that are enabled
+      // We only consider children nodes that can receive focus via arrows
       const parentsChildren = unfilteredChildren.filter((nodeId) => {
         const node = focusState.nodes[nodeId];
 
-        if (node && (node.disabled || node.isExiting)) {
+        if (!nodeCanReceiveIndirectFocus(focusState, node)) {
           return false;
         }
 
